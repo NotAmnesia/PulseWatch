@@ -4,7 +4,11 @@ import socket
 from datetime import datetime
 
 LOG_FILE = "pulsewatch.log"
-CHECK_INTERVAL = 10  # seconds
+CHECK_INTERVAL = 10
+
+CPU_ALERT = 85
+RAM_ALERT = 90
+DISK_ALERT = 90
 
 
 def internet_connected(host="8.8.8.8", port=53, timeout=3):
@@ -16,43 +20,52 @@ def internet_connected(host="8.8.8.8", port=53, timeout=3):
         return False
 
 
-def get_system_stats():
-    cpu = psutil.cpu_percent(interval=1)
-    memory = psutil.virtual_memory().percent
-    disk = psutil.disk_usage('/').percent
-    online = internet_connected()
-
+def get_stats():
     return {
-        "cpu": cpu,
-        "memory": memory,
-        "disk": disk,
-        "internet": online
+        "cpu": psutil.cpu_percent(interval=1),
+        "ram": psutil.virtual_memory().percent,
+        "disk": psutil.disk_usage("/").percent,
+        "internet": internet_connected()
     }
 
 
-def log_stats(stats):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    status = "ONLINE" if stats["internet"] else "OFFLINE"
+def check_alerts(stats):
+    alerts = []
+    if stats["cpu"] > CPU_ALERT:
+        alerts.append("⚠ HIGH CPU")
+    if stats["ram"] > RAM_ALERT:
+        alerts.append("⚠ HIGH RAM")
+    if stats["disk"] > DISK_ALERT:
+        alerts.append("⚠ LOW DISK SPACE")
+    if not stats["internet"]:
+        alerts.append("⚠ INTERNET DOWN")
+    return alerts
 
-    log_entry = (
-        f"[{timestamp}] "
-        f"CPU: {stats['cpu']}% | "
-        f"RAM: {stats['memory']}% | "
-        f"Disk: {stats['disk']}% | "
-        f"Internet: {status}\n"
+
+def log(stats, alerts):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    alert_text = " | ".join(alerts) if alerts else "OK"
+
+    line = (
+        f"[{ts}] CPU:{stats['cpu']}% "
+        f"RAM:{stats['ram']}% "
+        f"DISK:{stats['disk']}% "
+        f"NET:{'ON' if stats['internet'] else 'OFF'} "
+        f"STATUS:{alert_text}\n"
     )
 
-    with open(LOG_FILE, "a") as file:
-        file.write(log_entry)
+    with open(LOG_FILE, "a") as f:
+        f.write(line)
 
-    print(log_entry.strip())
+    print(line.strip())
 
 
 def main():
-    print("PulseWatch started. Press CTRL+C to stop.")
+    print("PulseWatch running… CTRL+C to stop")
     while True:
-        stats = get_system_stats()
-        log_stats(stats)
+        stats = get_stats()
+        alerts = check_alerts(stats)
+        log(stats, alerts)
         time.sleep(CHECK_INTERVAL)
 
 
