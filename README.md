@@ -1,10 +1,24 @@
 # PulseWatch
 
-PulseWatch is a lightweight system and uptime monitor written in Python. It periodically checks your computer’s CPU usage, memory usage, disk space, and internet connectivity, then logs the results to a file with timestamps. This makes it useful for spotting performance issues, detecting internet dropouts, or keeping a simple health record of a machine over time.
+# 🖥️ PulseWatch
 
-🧠 Features
-	•	CPU, RAM, and disk usage monitoring
-	•	Internet connectivity check
-	•	Timestamped logging
-	•	Runs continuously at a set interval
-	•	Easy to expand (alerts, graphs, email, etc.)
+![Python](https://img.shields.io/badge/python-3.10-blue)
+![Node](https://img.shields.io/badge/node.js-18-green)
+![License](https://img.shields.io/badge/license-MIT-purple)
+
+PulseWatch is a lightweight system monitoring tool with alerts, logging, and a real-time web dashboard.
+
+## ✨ Features
+- CPU / RAM / Disk monitoring
+- Internet connectivity detection
+- Alert system
+- Web dashboard
+- Linux daemon & Windows service support
+
+## 📊 Dashboard
+![Dashboard Screenshot](screenshots/dashboard.png)
+
+## 🚀 Usage
+```bash
+pip install -r requirements.txt
+python pulsewatch.py
